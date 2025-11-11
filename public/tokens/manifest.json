@@ -1,0 +1,4 @@
+[
+  { "name": "Guerreiro", "image": "/tokens/knight.jpg" },
+  { "name": "Orc", "image": "/tokens/arqueiro.jpg" }
+]
