@@ -1,18 +1,28 @@
-import React, { useRef, useState, useRef as useRefHook, useEffect } from "react";
+import React, {
+  useRef,
+  useState,
+  useRef as useRefHook,
+  useEffect,
+  useCallback,
+} from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useTexture } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
-function DraggableToken({
+function DraggableGLBToken({
   position = [0, 0, 0],
-  textureUrl,
-  label = "Token",
+  modelUrl,
+  label = "GLB Token",
   onDelete,
+  onMove, // 👈 para salvar posição
+  scale = 1,
 }) {
   const ref = useRef();
+  const { scene } = useGLTF(modelUrl);
   const { camera, raycaster, mouse } = useThree();
+
   const [isDragging, setIsDragging] = useState(false);
-  const [isHovered, setIsHovered] = useState(false); // 👈 novo
+  const [isHovered, setIsHovered] = useState(false);
   const [pos, setPos] = useState(new THREE.Vector3(...position));
   const [dragPlane, setDragPlane] = useState(null);
   const [offset, setOffset] = useState(new THREE.Vector3());
@@ -22,24 +32,20 @@ function DraggableToken({
   const lastClickTimeRef = useRefHook(0);
   const CLICK_WINDOW_MS = 500;
 
-  const texture = textureUrl ? useTexture(textureUrl) : null;
-
-  // 🔄 movimento suave
+  // Suaviza o movimento
   useFrame(() => {
     if (ref.current) {
       ref.current.position.lerp(pos, 0.08);
     }
   });
 
-  // 🖱️ Scroll move o token se ele estiver selecionado ou com hover
+  // Scroll move o token pra frente/trás
   useEffect(() => {
     const handleWheel = (e) => {
-      if (!isHovered && !isDragging) return; // 👈 só o token sob o mouse se move
-
+      if (!isHovered && !isDragging) return;
       e.stopPropagation();
       const dir = new THREE.Vector3();
       camera.getWorldDirection(dir);
-
       const distance = e.deltaY * -0.002;
       setPos((prev) => prev.clone().addScaledVector(dir, distance));
     };
@@ -48,7 +54,7 @@ function DraggableToken({
     return () => window.removeEventListener("wheel", handleWheel);
   }, [camera, isHovered, isDragging]);
 
-  // 🖱️ Clique e arrasto
+  // Clique e arrasto
   const onPointerDown = (e) => {
     e.stopPropagation();
     setIsDragging(true);
@@ -85,20 +91,21 @@ function DraggableToken({
     e.stopPropagation();
     setIsDragging(false);
     setDragPlane(null);
+    if (onMove) onMove(pos.toArray()); // ✅ salva posição final
   };
 
-  const onPointerMove = () => {
+  const onPointerMove = (e) => {
     if (isDragging && dragPlane) {
       raycaster.setFromCamera(mouse, camera);
       const intersection = new THREE.Vector3();
       if (raycaster.ray.intersectPlane(dragPlane, intersection)) {
         const newPos = intersection.sub(offset);
         setPos(newPos);
+        if (onMove) onMove(newPos.toArray()); // opcional: atualiza em tempo real
       }
     }
   };
 
-  // 👇 eventos de hover
   const onPointerEnter = (e) => {
     e.stopPropagation();
     setIsHovered(true);
@@ -112,25 +119,18 @@ function DraggableToken({
   };
 
   return (
-    <mesh
+    <primitive
       ref={ref}
+      object={scene.clone(true)}
       position={pos}
+      scale={scale}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       onPointerMove={onPointerMove}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
-      castShadow
-      receiveShadow
-    >
-      <boxGeometry args={[1.5, 3]} />
-      {texture ? (
-        <meshStandardMaterial map={texture} transparent />
-      ) : (
-        <meshStandardMaterial color={isHovered ? "gold" : "orange"} />
-      )}
-    </mesh>
+    />
   );
 }
 
-export { DraggableToken };
+export { DraggableGLBToken };

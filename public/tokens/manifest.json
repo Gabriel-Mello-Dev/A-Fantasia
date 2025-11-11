@@ -1,4 +1,5 @@
 [
   { "name": "Guerreiro", "image": "/tokens/knight.jpg" },
-  { "name": "Orc", "image": "/tokens/orc.jpg" }
+  { "name": "Orc", "image": "/tokens/orc.jpg" },
+  { "name": "DanielFenix", "image": "/tokens/orc2.jpg" }
 ]
