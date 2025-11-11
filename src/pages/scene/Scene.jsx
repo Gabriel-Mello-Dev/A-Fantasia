@@ -4,6 +4,7 @@ import { OrbitControls, Html, useGLTF } from "@react-three/drei";
 import { XR, XROrigin, createXRStore } from "@react-three/xr";
 import { useNavigate } from "react-router-dom";
 import { DraggableToken } from "../../components/DraggableToken";
+
 const xrStore = createXRStore();
 
 function ModelContent({ url }) {
@@ -13,36 +14,46 @@ function ModelContent({ url }) {
 
 function Scene() {
   const [modelUrl, setModelUrl] = useState(null);
+  const [tokens, setTokens] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const saved = localStorage.getItem("selectedMap");
     if (saved) setModelUrl("/models/maps/" + saved);
     else navigate("/");
-  }, []);
+  }, [navigate]);
 
-const [tokens, setTokens] = useState([]);
+  // Adiciona um token em uma posição
+  const addToken = (position, type = "default") => {
+    let textureUrl = "/tokens/default.jpg";
+    let label = "Token";
 
-  // Adiciona token manualmente (pode virar um botão futuramente)
- const addToken = (position) => {
+    if (type === "orc") {
+      textureUrl = "/tokens/orc.jpg";
+      label = "Orc";
+    } else if (type === "knight") {
+      textureUrl = "/tokens/knight.jpg";
+      label = "Knight";
+    }
+
     setTokens((prev) => [
       ...prev,
       {
         id: Date.now(),
-        type: "orc",
-        textureUrl: "/textures/orc.jpg",
+        textureUrl,
         position,
-        label: "orc",
+        label,
       },
     ]);
   };
+
   if (!modelUrl) {
     return <p style={{ color: "white" }}>Nenhum mapa selecionado</p>;
   }
 
   return (
     <div className="relative w-screen h-screen">
-      {/* Botão VR */}
+      {/* Botões flutuantes */}
       <div className="absolute z-10 flex flex-col gap-4 left-5 top-5">
         <button
           onClick={() => xrStore.enterVR()}
@@ -51,22 +62,22 @@ const [tokens, setTokens] = useState([]);
           🥽 Enter VR
         </button>
 
-  <button
-          onClick={() => addToken("orc")}
+        <button
+          onClick={() => addToken([0, 0, 0], "orc")}
           className="px-4 py-2 bg-green-600 text-white rounded"
         >
           ➕ Orc
         </button>
+
         <button
-          onClick={() => addToken("knight")}
+          onClick={() => addToken([0, 0, 0], "knight")}
           className="px-4 py-2 bg-blue-600 text-white rounded"
         >
           ➕ Knight
         </button>
-
       </div>
 
-      {/* Canvas 100% tela */}
+      {/* Canvas 3D */}
       <Canvas
         style={{
           position: "absolute",
@@ -81,6 +92,7 @@ const [tokens, setTokens] = useState([]);
           <XROrigin>
             <ambientLight intensity={0.6} />
             <directionalLight position={[5, 10, 5]} intensity={1.2} />
+
             <Suspense
               fallback={
                 <Html center>
@@ -88,28 +100,34 @@ const [tokens, setTokens] = useState([]);
                 </Html>
               }
             >
+              {/* Tokens dinâmicos */}
+              {tokens.map((token) => (
+                <DraggableToken key={token.id} {...token} />
+              ))}
 
-   {tokens.map((token) => (
-              <DraggableToken key={token.id} {...token} />
-            ))}
-            
+              {/* Modelo do mapa */}
               <ModelContent url={modelUrl} />
             </Suspense>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
+
+            {/* Plano do chão */}
+            <mesh
+              rotation={[-Math.PI / 2, 0, 0]}
+              position={[0, -1, 0]}
+            
+            >
               <planeGeometry args={[100, 100]} />
               <meshStandardMaterial color="#444" />
             </mesh>
-   <mesh
-              position={[0, 0, 0]}
-              onPointerDown={(e) => {
+
+<mesh   onPointerDown={(e) => {
                 e.stopPropagation();
                 const { x, z } = e.point;
                 addToken([x, 0, z]);
-              }}
-            >
-              <boxGeometry args={[1, 0.1, 1]} />
-              <meshStandardMaterial color="limegreen" />
-            </mesh>
+              }}>
+<boxGeometry></boxGeometry>
+<meshStandardMaterial color="#444" />
+
+</mesh>
 
             <OrbitControls />
           </XROrigin>
