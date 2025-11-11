@@ -1,5 +1,5 @@
 import React, { useRef, useState, useRef as useRefHook } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -7,28 +7,46 @@ function DraggableToken({
   position = [0, 0, 0],
   textureUrl,
   label = "Token",
-  onDelete, // <- nova prop
+  onDelete,
 }) {
   const ref = useRef();
+  const { camera, raycaster, mouse } = useThree();
   const [isDragging, setIsDragging] = useState(false);
-  const [pos, setPos] = useState(position);
+  const [pos, setPos] = useState(new THREE.Vector3(...position));
+  const [dragPlane, setDragPlane] = useState(null);
+  const [offset, setOffset] = useState(new THREE.Vector3());
 
-  // clique consecutivo (triple click)
+  // triple click
   const clickCountRef = useRefHook(0);
   const lastClickTimeRef = useRefHook(0);
-  const CLICK_WINDOW_MS = 500; // janela de tempo entre cliques
+  const CLICK_WINDOW_MS = 500;
 
   const texture = textureUrl ? useTexture(textureUrl) : null;
 
   useFrame(() => {
     if (ref.current) {
-      ref.current.position.lerp(new THREE.Vector3(...pos), 0.2);
+    ref.current.position.lerp(pos, 0.08);
     }
   });
 
   const onPointerDown = (e) => {
     e.stopPropagation();
     setIsDragging(true);
+
+    // plano invisível de arrasto (alinhado à câmera)
+    const normal = new THREE.Vector3();
+    camera.getWorldDirection(normal);
+    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+      normal,
+      ref.current.position
+    );
+    setDragPlane(plane);
+
+    // salva o offset do clique dentro do objeto
+    const intersection = new THREE.Vector3();
+    raycaster.setFromCamera(mouse, camera);
+    raycaster.ray.intersectPlane(plane, intersection);
+    setOffset(intersection.clone().sub(ref.current.position));
 
     // lógica de triple click
     const now = performance.now();
@@ -41,7 +59,6 @@ function DraggableToken({
 
     if (clickCountRef.current >= 3) {
       clickCountRef.current = 0;
-      // dispara exclusão se fornecido
       if (onDelete) onDelete();
     }
   };
@@ -49,12 +66,17 @@ function DraggableToken({
   const onPointerUp = (e) => {
     e.stopPropagation();
     setIsDragging(false);
+    setDragPlane(null);
   };
 
-  const onPointerMove = (e) => {
-    if (isDragging) {
-      const point = e.point;
-      setPos([point.x, 0, point.z]);
+  const onPointerMove = () => {
+    if (isDragging && dragPlane) {
+      raycaster.setFromCamera(mouse, camera);
+      const intersection = new THREE.Vector3();
+      if (raycaster.ray.intersectPlane(dragPlane, intersection)) {
+        const newPos = intersection.sub(offset);
+        setPos(newPos);
+      }
     }
   };
 
@@ -65,10 +87,12 @@ function DraggableToken({
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       onPointerMove={onPointerMove}
+      castShadow
+      receiveShadow
     >
-      <planeGeometry args={[1.5, 3]} />
+      <boxGeometry args={[1.5, 3]} />
       {texture ? (
-        <meshBasicMaterial map={texture} transparent />
+        <meshStandardMaterial map={texture} transparent />
       ) : (
         <meshStandardMaterial color="orange" />
       )}
