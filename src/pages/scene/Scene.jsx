@@ -22,6 +22,9 @@ function Scene() {
     if (saved) setModelUrl("/models/maps/" + saved);
     else navigate("/");
   }, [navigate]);
+  const removeToken = (id) => {
+    setTokens((prev) => prev.filter((t) => t.id !== id));
+  };
 
   // Adiciona um token em uma posição
   const addToken = (position, type = "default") => {
@@ -101,33 +104,46 @@ function Scene() {
               }
             >
               {/* Tokens dinâmicos */}
-              {tokens.map((token) => (
-                <DraggableToken key={token.id} {...token} />
-              ))}
+    {tokens.map((token) => (
+  <DraggableToken
+    key={token.id}
+    {...token}
+    onDelete={() => removeToken(token.id)}
+  />
+))}
 
               {/* Modelo do mapa */}
               <ModelContent url={modelUrl} />
             </Suspense>
 
             {/* Plano do chão */}
-            <mesh
-              rotation={[-Math.PI / 2, 0, 0]}
-              position={[0, -1, 0]}
-            
-            >
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
               <planeGeometry args={[100, 100]} />
               <meshStandardMaterial color="#444" />
             </mesh>
 
-<mesh   onPointerDown={(e) => {
+            <mesh
+              onPointerDown={(e) => {
                 e.stopPropagation();
                 const { x, z } = e.point;
                 addToken([x, 0, z]);
-              }}>
-<boxGeometry></boxGeometry>
-<meshStandardMaterial color="#444" />
+              }}
+            >
+              <boxGeometry></boxGeometry>
+              <meshStandardMaterial color="#444" />
+            </mesh>
 
-</mesh>
+            <mesh
+              position={[0, 1, 0]}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                const { x, z } = e.point;
+                addToken([x, 0, z], "orc");
+              }}
+            >
+              <boxGeometry></boxGeometry>
+              <meshStandardMaterial color="#5ae000ff" />
+            </mesh>
 
             <OrbitControls />
           </XROrigin>
