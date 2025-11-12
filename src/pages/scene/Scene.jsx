@@ -100,7 +100,7 @@ useEffect(() => {
       knight: { texture: "/tokens/knight.jpg", label: "Knight" },
       goblin: { texture: "/tokens/goblin.png", label: "Goblin" },
       troll: { texture: "/tokens/troll.jpg", label: "Troll" },
-      troll: { texture: "/tokens/daniel.png", label: "daniel" },
+      daniel: { texture: "/tokens/daniel.png", label: "daniel" },
     };
 
     const { texture, label } = TOKEN_TYPES[type] || TOKEN_TYPES.default;
@@ -272,7 +272,7 @@ if (key=="123"){
     />
 
         <SpawnerBox
-      position={[playerPosition.x + 0.5, playerPosition.y, playerPosition.z]}
+      position={[playerPosition.x + 1.2, playerPosition.y, playerPosition.z]}
       textureUrl="/tokens/daniel.png"
       label="daniel"
       type="daniel"
