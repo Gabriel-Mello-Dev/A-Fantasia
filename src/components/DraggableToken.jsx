@@ -13,7 +13,15 @@ function DraggableToken({
   const { camera, raycaster, mouse } = useThree();
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false); // 👈 novo
-  const [pos, setPos] = useState(new THREE.Vector3(...position));
+const [pos, setPos] = useState(() => {
+  if (Array.isArray(position)) {
+    return new THREE.Vector3(...position);
+  } else if (position instanceof THREE.Vector3) {
+    return position.clone();
+  } else {
+    return new THREE.Vector3(0, 0, 0);
+  }
+});
   const [dragPlane, setDragPlane] = useState(null);
   const [offset, setOffset] = useState(new THREE.Vector3());
 

@@ -7,6 +7,8 @@ import { DraggableToken } from "../../components/DraggableToken";
 import * as THREE from "three";
 import { SpawnerBox } from "../../components/SpawnerBox";
 import { Model3D } from "../../components/Model3D";
+import { PlayerTracker } from "./PlayerTracker";
+
 const xrStore = createXRStore();
 
 function ModelContent({ url }) {
@@ -20,6 +22,20 @@ function Scene() {
   const [showSpawners, setShowSpawners] = useState(false);
   const [showEnemies, setshowEnemies] = useState(false);
   const navigate = useNavigate();
+const [playerPosition, setPlayerPosition] = useState(new THREE.Vector3(0, 0, 0));
+
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.key === "Shift") {
+      // Move no eixo X positivo
+      setPlayerPosition((prev) => new THREE.Vector3(prev.x + 0.1, prev.y, prev.z));
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, []);
+
 
   useEffect(() => {
     if (!modelUrl) return; // Espera o mapa carregar
@@ -76,30 +92,56 @@ function Scene() {
   }, []);
 
   // ➕ Adiciona um token
-  const addToken = useCallback((position, type = "default") => {
-    // 🔹 Dicionário com todos os tipos
+ const addToken = useCallback(
+  (type = "default") => {
     const TOKEN_TYPES = {
       default: { texture: "/tokens/default.jpg", label: "Token" },
       orc: { texture: "/tokens/orc.jpg", label: "Orc" },
       knight: { texture: "/tokens/knight.jpg", label: "Knight" },
       goblin: { texture: "/tokens/goblin.png", label: "Goblin" },
       troll: { texture: "/tokens/troll.jpg", label: "Troll" },
+      troll: { texture: "/tokens/daniel.png", label: "daniel" },
     };
 
-    // 🔹 Busca o tipo escolhido ou o padrão
     const { texture, label } = TOKEN_TYPES[type] || TOKEN_TYPES.default;
 
-    // 🔹 Cria o token
+    // Usa posição atual do PlayerTracker
+    const playerPos = playerPosition.clone();
+
+    // Raycast para garantir que fique no chão
+    const raycaster = new THREE.Raycaster();
+    const down = new THREE.Vector3(0, -1, 0);
+    raycaster.set(new THREE.Vector3(playerPos.x, playerPos.y + 1, playerPos.z), down);
+
+    const groundMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(100, 100),
+      new THREE.MeshBasicMaterial()
+    );
+    groundMesh.rotation.x = -Math.PI / 2;
+    groundMesh.position.y = -1;
+
+    const intersects = raycaster.intersectObject(groundMesh, true);
+    let groundY = -2;
+
+    if (intersects.length > 0) {
+      groundY = intersects[0].point.y + 0.08;
+    }
+
+    const finalPos = new THREE.Vector3(playerPos.x, groundY, playerPos.z);
+
     setTokens((prev) => [
       ...prev,
       {
         id: Date.now(),
         textureUrl: texture,
-        position,
+        position: finalPos,
         label,
       },
     ]);
-  }, []);
+  },
+  [playerPosition]
+);
+
 
   useEffect(() => {
     const handleKey = async (e) => {
@@ -118,7 +160,16 @@ function Scene() {
           }
         }
       } else if (key === "m") {
+const key= prompt("senha");
+
+if (key=="123"){
         setshowEnemies((v) => !v);
+
+
+}else{
+  alert("senha errada")
+}
+
       } else if (key === "g") {
         // 🧱 Adiciona um novo GLB
         const glbName = prompt("Digite o nome do GLB (ex: ikki.glb):");
@@ -155,36 +206,7 @@ function Scene() {
 
   return (
     <div className="relative w-screen h-screen">
-      {/* Botões flutuantes */}
-      <div className="absolute z-10 flex flex-col gap-4 left-5 top-5">
-        <button
-          onClick={() => xrStore.enterVR()}
-          className="px-5 py-3 text-white font-bold bg-purple-600 rounded-lg hover:bg-purple-500"
-        >
-          🥽 Enter VR
-        </button>
 
-        <button
-          onClick={() => addToken([0, 0, 0], "orc")}
-          className="px-4 py-2 bg-green-600 text-white rounded"
-        >
-          ➕ Orc
-        </button>
-
-        <button
-          onClick={() => addToken([0, 0, 0], "knight")}
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          ➕ Knight
-        </button>
-
-        <button
-          onClick={() => setShowSpawners((v) => !v)}
-          className="px-4 py-2 bg-gray-700 text-white rounded"
-        >
-          🎯 Mostrar Spawners ({showSpawners ? "ON" : "OFF"})
-        </button>
-      </div>
 
       {/* Canvas 3D */}
       <Canvas
@@ -201,13 +223,16 @@ function Scene() {
           <XROrigin>
             <ambientLight intensity={0.6} />
             <directionalLight position={[5, 10, 5]} intensity={1.2} />
+<PlayerTracker
+  offsetX={3}
+  offsetY={0}
+  offsetZ={1}
+  onMove={(pos) => setPlayerPosition(pos)}
+/>
+
 
             <Suspense
-              fallback={
-                <Html center>
-                  <p style={{ color: "white" }}>Carregando modelo...</p>
-                </Html>
-              }
+              
             >
               {/* Tokens dinâmicos */}
               {tokens.map((token) => (
@@ -229,36 +254,33 @@ function Scene() {
             </mesh>
 
             {/* Spawners aparecem apenas quando showSpawners = true */}
-            {showSpawners && (
-              <>
-                <SpawnerBox
-                  position={[0, 0, 0]}
-                  textureUrl="/tokens/orc.jpg"
-                  label="Orc"
-                  type="orc"
-                  addToken={addToken}
-                />
-                <SpawnerBox
-                  position={[0, 1, 0]}
-                  textureUrl="/tokens/knight.jpg"
-                  label="Cavaleiro"
-                  type="knight"
-                  addToken={addToken}
-                />
-              </>
-            )}
+        {showSpawners && (
+  <>
+<SpawnerBox
+  position={[playerPosition.x, playerPosition.y, playerPosition.z]}
+  textureUrl="/tokens/orc.jpg"
+  label="Orc"
+  type="orc"
+  addToken={() => addToken("orc")}
+/>
+    <SpawnerBox
+      position={[playerPosition.x + 0.5, playerPosition.y, playerPosition.z]}
+      textureUrl="/tokens/knight.jpg"
+      label="Cavaleiro"
+      type="knight"
+  addToken={() => addToken("knight")}
+    />
 
-            {showEnemies && (
-              <>
-                <SpawnerBox
-                  position={[2, 0, 0]}
-                  textureUrl="/tokens/goblin.png"
-                  label="Goblin"
-                  type="goblin"
-                  addToken={addToken}
-                />
-              </>
-            )}
+        <SpawnerBox
+      position={[playerPosition.x + 0.5, playerPosition.y, playerPosition.z]}
+      textureUrl="/tokens/daniel.png"
+      label="daniel"
+      type="daniel"
+  addToken={() => addToken("daniel")}
+    />
+  </>
+)}
+
 
             <Model3D 
               position={[0, 0, 0]}
