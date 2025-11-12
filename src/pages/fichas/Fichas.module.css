@@ -1,0 +1,396 @@
+.container {
+  padding: 20px;
+  background: #1a1a1a;
+  min-height: 100vh;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.btnAdicionar,
+.btnExportar,
+.btnImportar,
+.btnLimpar {
+  background: #ff0000;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.btnAdicionar:hover,
+.btnExportar:hover,
+.btnImportar:hover {
+  background: #cc0000;
+}
+
+.btnLimpar {
+  background: #8b0000;
+  margin-left: auto;
+}
+
+.btnLimpar:hover {
+  background: #660000;
+}
+
+.fichasGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 30px;
+}
+
+.fichaCard {
+  background: linear-gradient(135deg, #2a1a1a 0%, #1a0a0a 100%);
+  border: 2px solid #ff0000;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+  position: relative;
+}
+
+.fichaHeader {
+  display: grid;
+  grid-template-columns: 200px 1fr 150px;
+  padding: 20px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(139,0,0,0.3) 100%);
+  position: relative;
+}
+
+.fichaImagem {
+  width: 180px;
+  height: 250px;
+  border: 3px solid #ff0000;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+}
+
+.fichaImagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imagemPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.uploadLabel {
+  cursor: pointer;
+  color: #ff0000;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  transition: color 0.3s;
+}
+
+.uploadLabel:hover {
+  color: #ff6666;
+}
+
+.btnRemoverImagem {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(139, 0, 0, 0.9);
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btnRemoverImagem:hover {
+  background: #ff0000;
+}
+
+.btnTrocarImagem {
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid #ff0000;
+  color: #ff0000;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: inline-block;
+  margin-top: 8px;
+  transition: all 0.3s;
+}
+
+.btnTrocarImagem:hover {
+  background: rgba(255, 0, 0, 0.4);
+}
+
+.fichaInfo {
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.fichaNome {
+  font-size: 48px;
+  font-weight: bold;
+  color: #ff0000;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  font-family: 'Impact', sans-serif;
+  letter-spacing: 2px;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+}
+
+.fichaSubtitulo {
+  font-size: 14px;
+  color: #ccc;
+  margin: 0;
+  font-style: italic;
+}
+
+.inputNome,
+.inputSubtitulo {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #ff0000;
+  color: white;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.inputNome {
+  font-size: 32px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.inputSubtitulo {
+  font-size: 14px;
+  font-style: italic;
+  resize: vertical;
+}
+
+.simbolo {
+  width: 150px;
+  height: 150px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.simboloSvg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.8));
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.habilidadesContainer {
+  padding: 20px;
+}
+
+.habilidade {
+  background: rgba(0, 0, 0, 0.6);
+  border-left: 4px solid #ff0000;
+  padding: 15px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.habilidadeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.habilidadeNome {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.habilidadeCusto {
+  background: #ff0000;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.habilidadeDesc {
+  color: #ccc;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.inputHabNome,
+.inputHabCusto,
+.inputHabDesc {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #ff0000;
+  color: white;
+  padding: 6px;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.inputHabNome {
+  flex: 1;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.inputHabCusto {
+  width: 80px;
+  text-align: center;
+}
+
+.inputHabDesc {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+  font-size: 14px;
+}
+
+.btnRemoverHab {
+  background: #8b0000;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+.btnRemoverHab:hover {
+  background: #ff0000;
+}
+
+.btnAdicionarHab {
+  background: rgba(255, 0, 0, 0.2);
+  border: 2px dashed #ff0000;
+  color: #ff0000;
+  padding: 10px;
+  width: 100%;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.btnAdicionarHab:hover {
+  background: rgba(255, 0, 0, 0.4);
+}
+
+.fichaFooter {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 2px solid #ff0000;
+}
+
+.marca {
+  color: #999;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.footerButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.btnEditar,
+.btnSalvar,
+.btnRemover {
+  background: #ff0000;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btnEditar:hover,
+.btnSalvar:hover {
+  background: #cc0000;
+}
+
+.btnRemover {
+  background: #8b0000;
+}
+
+.btnRemover:hover {
+  background: #660000;
+}
+
+.emptyState {
+  text-align: center;
+  color: #666;
+  padding: 60px 20px;
+  font-size: 18px;
+}
+
+.emptyState p {
+  margin: 10px 0;
+}
+
+@media (max-width: 768px) {
+  .fichasGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .fichaHeader {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .simbolo {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin: 0 auto;
+  }
+}

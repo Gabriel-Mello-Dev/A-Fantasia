@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import {Home, Scene} from "./pages";
+import {Fichas, Home, Scene} from "./pages";
 import { LayoutPadrao } from "./components/LayoutPadrao";
 
 function AppRoutes() {
@@ -9,6 +9,7 @@ function AppRoutes() {
       <Route>
         <Route path="/" element={<Home />} />
         <Route path="/scene" element={<Scene />} />
+        <Route path="/Fichas" element={<Fichas />} />
     
       </Route>
 

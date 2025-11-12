@@ -5,7 +5,7 @@ import { XR, XROrigin, createXRStore } from "@react-three/xr";
 import { useNavigate } from "react-router-dom";
 import { DraggableToken } from "../../components/DraggableToken";
 import * as THREE from "three";
-
+import {SpawnerBox} from '../../components/SpawnerBox'
 const xrStore = createXRStore();
 
 function ModelContent({ url }) {
@@ -17,6 +17,7 @@ function Scene() {
   const [modelUrl, setModelUrl] = useState(null);
   const [tokens, setTokens] = useState([]);
   const [showSpawners, setShowSpawners] = useState(false);
+  const [showEnemies, setshowEnemies] = useState(false);
   const navigate = useNavigate();
 
 useEffect(() => {
@@ -74,28 +75,31 @@ useEffect(() => {
   }, []);
 
   // ➕ Adiciona um token
-  const addToken = useCallback((position, type = "default") => {
-    let textureUrl = "/tokens/default.jpg";
-    let label = "Token";
+const addToken = useCallback((position, type = "default") => {
+  // 🔹 Dicionário com todos os tipos
+  const TOKEN_TYPES = {
+    default: { texture: "/tokens/default.jpg", label: "Token" },
+    orc: { texture: "/tokens/orc.jpg", label: "Orc" },
+    knight: { texture: "/tokens/knight.jpg", label: "Knight" },
+    goblin: { texture: "/tokens/goblin.png", label: "Goblin" },
+    troll: { texture: "/tokens/troll.jpg", label: "Troll" },
+  };
 
-    if (type === "orc") {
-      textureUrl = "/tokens/orc.jpg";
-      label = "Orc";
-    } else if (type === "knight") {
-      textureUrl = "/tokens/knight.jpg";
-      label = "Knight";
-    }
+  // 🔹 Busca o tipo escolhido ou o padrão
+  const { texture, label } = TOKEN_TYPES[type] || TOKEN_TYPES.default;
 
-    setTokens((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        textureUrl,
-        position,
-        label,
-      },
-    ]);
-  }, []);
+  // 🔹 Cria o token
+  setTokens((prev) => [
+    ...prev,
+    {
+      id: Date.now(),
+      textureUrl: texture,
+      position,
+      label,
+    },
+  ]);
+}, []);
+
 
 useEffect(() => {
   const handleKey = async (e) => {
@@ -116,22 +120,8 @@ useEffect(() => {
       }
 
     } else if (key === "m") {
-      // 🧹 Remove apenas os GLBs
-      if (window.confirm("Deseja remover apenas os modelos GLB?")) {
-        setTokens((prev) => prev.filter((t) => !t.isGLB));
-        if (modelUrl) {
-          const mapName = modelUrl.split("/").pop();
-          const saved = localStorage.getItem(`tokens_${mapName}`);
-          if (saved) {
-            try {
-              const parsed = JSON.parse(saved).filter((t) => !t.isGLB);
-              localStorage.setItem(`tokens_${mapName}`, JSON.stringify(parsed));
-            } catch (err) {
-              console.warn("Erro ao limpar GLBs:", err);
-            }
-          }
-        }
-      }
+   
+      setshowEnemies((v) => !v);
 
     } else if (key === "g") {
       // 🧱 Adiciona um novo GLB
@@ -167,6 +157,8 @@ useEffect(() => {
     return <p style={{ color: "white" }}>Nenhum mapa selecionado</p>;
   }
 
+
+  
   return (
     <div className="relative w-screen h-screen">
       {/* Botões flutuantes */}
@@ -243,45 +235,38 @@ useEffect(() => {
             </mesh>
 
             {/* Spawners aparecem apenas quando showSpawners = true */}
-            {showSpawners && (
-              <>
-                <mesh
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    const { x, z } = e.point;
-                    addToken([x, 0, z]);
-                  }}
-                  position={[0, 0, 0]}
-                >
-                  <boxGeometry args={[0.6, 0.6, 0.6]} />
-                  <meshStandardMaterial color="#999" />
-                </mesh>
+      {showSpawners && (
+  <>
+    <SpawnerBox
+      position={[0, 0, 0]}
+      textureUrl="/tokens/orc.jpg"
+      label="Orc"
+      type="orc"
+      addToken={addToken}
+    />
+    <SpawnerBox
+      position={[0, 1, 0]}
+      textureUrl="/tokens/knight.jpg"
+      label="Cavaleiro"
+      type="knight"
+      addToken={addToken}
+    />
+  </>
+)}
 
-                <mesh
-                  position={[0, 1, 0]}
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    const { x, z } = e.point;
-                    addToken([x, 0, z], "orc");
-                  }}
-                >
-                  <boxGeometry args={[0.6, 0.6, 0.6]} />
-                  <meshStandardMaterial color="#5ae000" />
-                </mesh>
+{showEnemies && (
+  <>
+    <SpawnerBox
+      position={[2, 0, 0]}
+      textureUrl="/tokens/goblin.png"
+      label="Goblin"
+      type="goblin"
+      addToken={addToken}
+    />
 
-                <mesh
-                  position={[0, 2, 0]}
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    const { x, z } = e.point;
-                    addToken([x, 0, z], "knight");
-                  }}
-                >
-                  <boxGeometry args={[0.6, 0.6, 0.6]} />
-                  <meshStandardMaterial color="#007bff" />
-                </mesh>
-              </>
-            )}
+  </>
+)}
+
 
             <OrbitControls />
           </XROrigin>

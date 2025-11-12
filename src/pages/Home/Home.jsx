@@ -46,6 +46,9 @@ function Home() {
             {map.name}
           </button>
         ))}
+
+<button onClick={()=>navigate("/Fichas")}>Fichas</button>
+
       </div>
     </div>
   );
